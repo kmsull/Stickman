@@ -1,6 +1,10 @@
 import pygame
 
-def draw_level(screen, width, height):
-    levelRect = pygame.Rect(width/3, 3*(height/4), width/3, height/4)
-    pygame.draw.rect(screen, "black", levelRect, 5)
-    return levelRect
+class platform(pygame.sprite.Sprite):
+    def __init__(self, WIDTH, HEIGHT):
+        super().__init__()
+        self.surf = pygame.Surface((WIDTH, 1))
+        self.surf.fill("black")
+        self.rect = self.surf.get_rect(center = (WIDTH/2, HEIGHT - 50))
+    def draw_platform(self, screen):
+        pygame.draw.rect(screen, "black", self.rect, 1)

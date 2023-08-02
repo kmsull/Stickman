@@ -2,12 +2,14 @@
 # Avoid Clutter of functions besides main()
 # Example file showing a basic pygame "game loop"
 import pygame
-from player.stickman_player import draw_player
-from world.testing_level import draw_level
-from player.inputs import handle_inputs
+from player.stickman_player import Player
+from world.testing_level import platform
+from player.arm import draw_arm
 
-GRAVITY = 3
-JUMPVELO = -50
+ACC = 0.25
+FRIC = -0.12
+
+armImage = pygame.image.load('D:\\HOME\\PERSONAL\\CODING\\Stickman\\Stickman\\player\\tempTextures\\arm\\armR.png')
 
 def handle_collision(elements, element):
     for thing in elements:
@@ -25,7 +27,19 @@ running = True
 playerColors = ["blue", "red", "green"]
 
 playerPosition = pygame.Vector2(width/2, height/2)
-is_jumping = False
+
+P1 = Player(playerPosition)
+PT1 = platform(width, height)
+
+platforms = pygame.sprite.Group()
+platforms.add(PT1)
+
+playerSprites = pygame.sprite.Group()
+playerSprites.add(P1)
+
+all_sprites = pygame.sprite.Group()
+all_sprites.add(PT1)
+all_sprites.add(P1)
 
 while running:
     # poll for events
@@ -34,33 +48,28 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
-                if not is_jumping:
-                    is_jumping = True
+            if event.key == pygame.K_ESCAPE:
+                running = False
+                
+                    
     width = screen.get_width()
     height = screen.get_height()
-
+    
     # fill the screen with a color to wipe away anything from last frame
     screen.fill("white")
     
     # RENDER YOUR GAME HERE
-    level_rect = draw_level(screen, width, height)
-    handle_inputs(playerPosition)
     
-    if is_jumping:
-        playerPosition += pygame.Vector2(0, JUMPVELO)
-        is_jumping = False
+    # P1.draw_player(screen, playerColors[1])
+    P1.move(ACC, FRIC, width)
+    is_jumping = P1.handle_collision(platforms)
+    PT1.draw_platform(screen)
+    playerSprites.draw(screen)
     
-    if not is_jumping:
-        playerPosition.y += GRAVITY
-    
-    
-    hitbox = draw_player(playerPosition, screen, playerColors[1])
-    if handle_collision([level_rect], hitbox):
-        playerPosition.y = level_rect.top - hitbox.height + 16
+    draw_arm(screen, P1.pos, armImage, P1.direction)
     # flip() the display to put your work on screen
     pygame.display.flip()
 
-    clock.tick(120)  # limits FPS to 120
+    clock.tick(144)  # limits FPS to 144
 
 pygame.quit()
