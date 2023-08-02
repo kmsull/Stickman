@@ -5,6 +5,8 @@ import pygame
 from player.stickman_player import Player
 from world.testing_level import platform
 from player.arm import draw_arm
+from grapple.ropeSegmentTest import spawn_rope
+
 
 ACC = 0.25
 FRIC = -0.12
@@ -19,6 +21,7 @@ def handle_collision(elements, element):
 
 # pygame setup
 pygame.init()
+
 width, height = 1280, 720
 screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
 clock = pygame.time.Clock()
@@ -37,9 +40,7 @@ platforms.add(PT1)
 playerSprites = pygame.sprite.Group()
 playerSprites.add(P1)
 
-all_sprites = pygame.sprite.Group()
-all_sprites.add(PT1)
-all_sprites.add(P1)
+
 
 while running:
     # poll for events
@@ -51,7 +52,7 @@ while running:
             if event.key == pygame.K_ESCAPE:
                 running = False
                 
-                    
+   
     width = screen.get_width()
     height = screen.get_height()
     
@@ -67,6 +68,8 @@ while running:
     playerSprites.draw(screen)
     
     draw_arm(screen, P1.pos, armImage, P1.direction)
+    
+    
     # flip() the display to put your work on screen
     pygame.display.flip()
 
