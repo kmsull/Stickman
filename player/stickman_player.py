@@ -90,10 +90,11 @@ class Player(pygame.sprite.Sprite):
         self.acc = pygame.Vector2(0,0.5)
         
         if self.direction == 1:
-            self.image = self.standingSprite[0]
+                self.image = self.standingSprite[0]
         if self.direction == 0:
             self.image =self.standingSprite[1]
-            
+                 
+           
         pressed_keys = pygame.key.get_pressed()            
         if pressed_keys[pygame.K_a]:
             self.acc.x = -ACC
@@ -119,8 +120,12 @@ class Player(pygame.sprite.Sprite):
             if self.is_jumping == False:
                 self.is_jumping = True
                 self.jump()
-                
-                
+        if self.is_jumping:
+            if self.direction == 1:   
+                self.image = self.jumpRight[4]
+            if self.direction == 0:
+                self.image = self.jumpLeft[4]
+            
                                 
                                 
         self.acc.x += self.vel.x * FRIC
@@ -141,16 +146,13 @@ class Player(pygame.sprite.Sprite):
         
     def jump(self):
         self.vel.y = -15
-        self.curSprite += 0.1
-        if self.curSprite >= len(self.jumpRight):
-            self.curSprite = 0
-        self.image = self.jumpRight[int(self.curSprite)]
-
+        
     def handle_collision(self, elements):
         hits = pygame.sprite.spritecollide(self, elements, False)
         if hits:
+            self.is_jumping = False
             self.pos.y = hits[0].rect.top + 1
             self.vel.y = 0
-            self.is_jumping = False
+            
         
         
