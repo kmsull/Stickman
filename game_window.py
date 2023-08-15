@@ -7,6 +7,8 @@ from world.testing_level import platform, deathBox
 from player.arm import draw_arm
 from grapple.ropeSegmentTest import spawn_rope
 from textDisplay.lives import draw_lives_text
+import os 
+
 
 ACC = 0.25
 FRIC = -0.12
@@ -15,8 +17,9 @@ FRIC = -0.12
 # Mac Path = /Users/kendawg/Desktop/Coding Proj/Stickman/player/tempTextures/arm/armR.png
 # path = /Users/kendawg/Desktop/Coding Proj/Stickman/player/tempTextures/
 
+tempTextures_folder = os.path.join(os.path.dirname(__file__),"player", "tempTextures")       
 
-armImage = pygame.image.load('/Users/kendawg/Desktop/Coding Proj/Stickman/player/tempTextures/arm/armR.png')
+armImage = pygame.image.load(os.path.join(tempTextures_folder, 'arm', 'armR.png'))
 
 def handle_collision(elements, element):
     for thing in elements:
