@@ -6,9 +6,9 @@ def draw_arm(screen, startPos, image, direction):
     mouse_x, mouse_y = pygame.mouse.get_pos()
 
     if direction == 1:  
-        offset_x, offset_y = -10, -20  # Offset from the startPos parameter
+        offset_x, offset_y = -10, -18  # Offset from the startPos parameter
     if direction == 0:
-        offset_x, offset_y = -16, -20  # Offset from the startPos parameter
+        offset_x, offset_y = -12, -18  # Offset from the startPos parameter
     start_x, start_y = startPos[0] + offset_x, startPos[1] + offset_y
 
     dx = mouse_x - start_x
