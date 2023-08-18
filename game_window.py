@@ -1,103 +1,106 @@
-#  Main game file
-# Avoid Clutter of functions besides main()
-# Example file showing a basic pygame "game loop"
 import pygame
 from player.stickman_player import Player
-from world.testing_level import platform, deathBox
+from world.testing_level import platform, deathBox  
 from player.arm import draw_arm
-from grapple.ropeSegmentTest import spawn_rope
+from grapple.ropeSegmentTest import Rope
 from textDisplay.lives import draw_lives_text
-import os 
-
+import os
+import math
 
 ACC = 0.25
 FRIC = -0.12
+ROPE_SEGMENT_LENGTH = 20
 
-# Windows Path = D:\\HOME\\PERSONAL\\CODING\\Stickman\\Stickman\\player\\tempTextures\\arm\\armR.png
-# Mac Path = /Users/kendawg/Desktop/Coding Proj/Stickman/player/tempTextures/arm/armR.png
-# path = /Users/kendawg/Desktop/Coding Proj/Stickman/player/tempTextures/
 
 tempTextures_folder = os.path.join(os.path.dirname(__file__),"player", "tempTextures")       
-
 armImage = pygame.image.load(os.path.join(tempTextures_folder, 'arm', 'armR.png'))
 
-def handle_collision(elements, element):
-    for thing in elements:
-        if element.colliderect(thing):
-            return True
-    return False
-
-# pygame setup
 pygame.init()
-
 width, height = 1280, 720
 screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
 clock = pygame.time.Clock()
-running = True
 
 playerColors = ["blue", "red", "green"]
-
 playerPosition = pygame.Vector2(width/2, height/2)
 
-theDeathBox = deathBox(width, 30, height)
-
+theDeathBox = deathBox(width, 30, height)    
 P1 = Player(playerPosition)
-PT1 = platform(width/3, pygame.Vector2(200,300))
+
+PT1 = platform(width/3, pygame.Vector2(250,550))
 PT2 = platform(width/3, pygame.Vector2(width - 600, height - 100))
-#PT3 = platform(width/3, pygame.Vector2(width - 600, height - 500))
 
 platforms = pygame.sprite.Group()
 platforms.add(PT1)
 platforms.add(PT2)
-#platforms.add(PT3)
 
 playerSprites = pygame.sprite.Group()
 playerSprites.add(P1)
 
+rope_segments = []
 
 deathboxSprite = pygame.sprite.Group()
 deathboxSprite.add(theDeathBox)
 
+running = True
 while running:
-    # Check for a non-negative # of lives
-    if P1.lives < 0:
-        running = False
 
-    # poll for events
-    # pygame.QUIT event means the user clicked X to close your window
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                running = False
-    
-    
+  if P1.lives < 0:
+    running = False
+
+  for event in pygame.event.get():
+    if event.type == pygame.QUIT:
+      running = False
+
+    if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+      running = False
+
+    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
    
-    width = screen.get_width()
-    height = screen.get_height()
-    
-    # fill the screen with a color to wipe away anything from last frame
-    screen.fill("white")
-    
-    # RENDER YOUR GAME HERE
+        mouse_pos = pygame.mouse.get_pos()
+        dist_to_player = (P1.pos - mouse_pos).length()
+        num_segments = math.ceil(dist_to_player / ROPE_SEGMENT_LENGTH)
+        
+        rope_segments = []
+        
+        rope_len = dist_to_player / num_segments
+        length_vector = pygame.math.Vector2(ROPE_SEGMENT_LENGTH, 0)
+        for i in range(num_segments):
+            start = mouse_pos if i==0 else previous_rope.end
+            end = start + length_vector
+            rope = Rope(start, end, ROPE_SEGMENT_LENGTH)
+            rope_segments.append(rope)
+            previous_rope = rope
+        rope_segments[-1].end = P1.pos
 
-    draw_lives_text(screen, width, height, P1.lives)
+  screen.fill("white")  
 
+  draw_lives_text(screen, width, height, P1.lives)
 
-    # P1.draw_player(screen, playerColors[1])
-    P1.move(ACC, FRIC, width, height)
-    is_jumping = P1.handle_collision(platforms, deathboxSprite)
-    playerSprites.draw(screen)
-    theDeathBox.draw_platform(screen)
-    draw_arm(screen, P1.pos, armImage, P1.direction)
-    
-    for platform in platforms:
-        platform.draw_platform(screen)
+  P1.move(ACC, FRIC, width, height)    
 
-    # flip() the display to put your work on screen
-    pygame.display.flip()
+  gravity = 2
+  gravity_vector = pygame.Vector2(0, gravity)
+  
+  previous_segment = None
+  for segment in rope_segments[:-1]:
+    if previous_segment:
+       segment.start = previous_segment.end
+    segment.update(gravity) 
+    pygame.draw.line(screen, (0,0,0), segment.start, segment.end)
+    previous_segment = segment
+    rope_segments[-1].start = rope_segments[-2].end 
+    rope_segments[-1].end = P1.pos
 
-    clock.tick(120)  # limits FPS to 144
+  is_jumping = P1.handle_collision(platforms, deathboxSprite)
+
+  playerSprites.draw(screen)
+  theDeathBox.draw_platform(screen)
+  draw_arm(screen, P1.pos, armImage, P1.direction)    
+
+  for platform in platforms:
+    platform.draw_platform(screen)
+
+  pygame.display.flip()
+  clock.tick(120)
 
 pygame.quit()

@@ -1,11 +1,9 @@
-from email.header import Header
-from tkinter import W
 import pygame
 
 class platform(pygame.sprite.Sprite):
     def __init__(self, WIDTH, pos):
         super().__init__()
-        self.surf = pygame.Surface((WIDTH, 100))
+        self.surf = pygame.Surface((WIDTH, 15))
         self.surf.fill("black")
         self.rect = self.surf.get_rect(center = (pos.x, pos.y))
     def draw_platform(self, screen):

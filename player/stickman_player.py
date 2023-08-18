@@ -191,13 +191,15 @@ class Player(pygame.sprite.Sprite):
         dead = pygame.sprite.spritecollide(self, deathBox, False)
         if hits:
             for platform in hits:
-                if self.vel.y > 0:  # If the player is moving downwards (falling)
+                if (self.rect.bottom >= platform.rect.top) & (self.rect.left <= platform.rect.right) & (self.rect.right >= platform.rect.left) & (self.rect.top <= platform.rect.bottom):  # If the player is moving downwards (falling)
                     self.pos.y = platform.rect.top + 1
                     self.vel.y = 0
                     self.is_jumping = False
-                elif self.vel.y < 0:  # If the player is moving upwards (jumping)
-                    self.pos.y = platform.rect.bottom + self.rect.height + 1
+                if (self.rect.bottom >= platform.rect.bottom) & (self.rect.top <= platform.rect.bottom) & (self.rect.left <= platform.rect.right) & (self.rect.right >= platform.rect.left):
                     self.vel.y = 0
-        if dead:
+                    self.pos.y = platform.rect.bottom + self.rect.height + 15
+                    self.is_jumping = True
+                
+        if dead:    
             self.death_respawn()
             
