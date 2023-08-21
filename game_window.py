@@ -9,7 +9,9 @@ import math
 
 ACC = 0.25
 FRIC = -0.12
-ROPE_SEGMENT_LENGTH = 20
+ROPE_SEGMENT_LENGTH = 10
+GRAVITY = 0.5
+speed_factor = .5
 
 
 tempTextures_folder = os.path.join(os.path.dirname(__file__),"player", "tempTextures")       
@@ -36,10 +38,12 @@ platforms.add(PT2)
 playerSprites = pygame.sprite.Group()
 playerSprites.add(P1)
 
+spawnedRopes = []
 rope_segments = []
 
 deathboxSprite = pygame.sprite.Group()
 deathboxSprite.add(theDeathBox)
+
 
 running = True
 while running:
@@ -65,37 +69,42 @@ while running:
         rope_len = dist_to_player / num_segments
         length_vector = pygame.math.Vector2(ROPE_SEGMENT_LENGTH, 0)
         for i in range(num_segments):
-            start = mouse_pos if i==0 else previous_rope.end
+            start = mouse_pos
             end = start + length_vector
             rope = Rope(start, end, ROPE_SEGMENT_LENGTH)
             rope_segments.append(rope)
             previous_rope = rope
         rope_segments[-1].end = P1.pos
-
+        spawnedRopes.append(rope_segments)
   screen.fill("white")  
 
   draw_lives_text(screen, width, height, P1.lives)
 
   P1.move(ACC, FRIC, width, height)    
 
-  gravity = 2
-  gravity_vector = pygame.Vector2(0, gravity)
+  
+  gravity_vector = pygame.Vector2(0, GRAVITY)
   
   previous_segment = None
-  for segment in rope_segments[:-1]:
-    if previous_segment:
-       segment.start = previous_segment.end
-    segment.update(gravity) 
-    pygame.draw.line(screen, (0,0,0), segment.start, segment.end)
-    previous_segment = segment
-    rope_segments[-1].start = rope_segments[-2].end 
-    rope_segments[-1].end = P1.pos
+  for rope_segments in spawnedRopes:
+      for segment in rope_segments[:-1]:
+          if previous_segment:
+              segment.start = previous_segment.end
+          
+          segment.update(GRAVITY, speed_factor)
+          segment.handle_collision(platforms) 
+          pygame.draw.line(screen, (0,0,0), segment.start, segment.end)
+          pygame.draw.circle(screen, 'black', segment.start, 1)
+          pygame.draw.circle(screen, 'black', segment.end, 1)
+          previous_segment = segment
+          rope_segments[-1].start = rope_segments[-2].end 
+          rope_segments[-1].end = P1.pos
 
   is_jumping = P1.handle_collision(platforms, deathboxSprite)
 
   playerSprites.draw(screen)
   theDeathBox.draw_platform(screen)
-  draw_arm(screen, P1.pos, armImage, P1.direction)    
+  draw_arm(screen, P1.pos, armImage, P1.direction)   
 
   for platform in platforms:
     platform.draw_platform(screen)
