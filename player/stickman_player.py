@@ -3,8 +3,6 @@ import os
 
 vec = pygame.Vector2
 class Player(pygame.sprite.Sprite):
-    
-    
     def __init__(self, pos):
         super().__init__() 
         self.surf = pygame.Surface((30, 30))
@@ -100,17 +98,17 @@ class Player(pygame.sprite.Sprite):
     
     def stand_still(self):
         self.image = self.standingSprite[0]
-        
-        
+           
     def walk_left(self):
         self.curSprite += 0.1
         if self.curSprite >= len(self.walkLeft):
             self.curSprite = 0
         self.image = self.walkLeft[int(self.curSprite)]
+        
     def jump_left(self):
         for x in self.jumpLeft:
             self.image = x
-    
+            
     def jump_right(self):
         for x in self.jumpRight:
             self.image = x
@@ -121,7 +119,8 @@ class Player(pygame.sprite.Sprite):
         if self.direction == 1:
             self.image = self.duck[1]
 
-    def move(self, ACC, FRIC, WIDTH, HEIGHT):
+    def move(self, ACC, FRIC, WIDTH, screen):
+        self.update_draw_Crosshair(screen)
         self.acc = pygame.Vector2(0,0.5)
         if self.direction == 1:
                 self.image = self.standingSprite[0]
@@ -179,27 +178,40 @@ class Player(pygame.sprite.Sprite):
            
         self.rect.midbottom = self.pos
     
-    
-        
     def jump(self):
         self.vel.y = -15
         self.curSprite += 0.1
 
-
     def handle_collision(self, elements, deathBox):
-        hits = pygame.sprite.spritecollide(self, elements, False)
+        collison_tolerance = 20
+        horizontal_collision_tolerance = 10
         dead = pygame.sprite.spritecollide(self, deathBox, False)
-        if hits:
-            for platform in hits:
-                if (self.rect.bottom >= platform.rect.top) & (self.rect.left <= platform.rect.right) & (self.rect.right >= platform.rect.left) & (self.rect.top <= platform.rect.bottom):  # If the player is moving downwards (falling)
-                    self.pos.y = platform.rect.top + 1
+        for element in elements:
+            platformCollision = self.rect.colliderect(element)
+            if platformCollision:
+                if abs(element.rect.top - self.rect.bottom) < collison_tolerance:
                     self.vel.y = 0
+                    self.pos.y = element.rect.top
                     self.is_jumping = False
-                if (self.rect.bottom >= platform.rect.bottom) & (self.rect.top <= platform.rect.bottom) & (self.rect.left <= platform.rect.right) & (self.rect.right >= platform.rect.left):
+                if abs(element.rect.bottom - self.rect.top)< collison_tolerance:
                     self.vel.y = 0
-                    self.pos.y = platform.rect.bottom + self.rect.height + 15
+                    self.pos.y = element.rect.bottom + self.rect.height
                     self.is_jumping = True
+                if abs(element.rect.right - self.rect.left) < horizontal_collision_tolerance:
+                    self.vel.x = 0
+                    self.pos.x = element.rect.right + 25
+                if abs(element.rect.left - self.rect.right) < horizontal_collision_tolerance:
+                    self.vel.x = 0
+                    self.pos.x = element.rect.left - 25
                 
         if dead:    
             self.death_respawn()
-            
+
+    def update_draw_Crosshair(self, screen):
+        center = pygame.mouse.get_pos()
+        centerSpacing = 5
+        lineLength = 10
+        pygame.draw.line(screen, "red", center - pygame.Vector2(centerSpacing,0), center - pygame.Vector2(lineLength,0), 2)
+        pygame.draw.line(screen, "red", center + pygame.Vector2(centerSpacing,0), center + pygame.Vector2(lineLength,0), 2)
+        pygame.draw.line(screen, "red", center - pygame.Vector2(0,centerSpacing), center - pygame.Vector2(0,lineLength), 2)
+        pygame.draw.line(screen, "red", center + pygame.Vector2(0,centerSpacing), center + pygame.Vector2(0,lineLength), 2)
